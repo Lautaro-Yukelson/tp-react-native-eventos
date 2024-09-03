@@ -6,7 +6,7 @@ const apiBaseUrl = 'yuke.ddns.net';
 const apiPort = '3103';
 
 const axiosInstance = axios.create({
-	baseURL: `http://${apiBaseUrl}:${apiPort}/api/`,
+	baseURL: `http://${apiBaseUrl}:${apiPort}/api/dai`,
 	withCredentials: true,
 	headers: {
 		'Content-Type': 'application/json',
