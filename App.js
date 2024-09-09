@@ -4,9 +4,10 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { AuthProvider, useAuth } from './src/AuthContext';
 import { TouchableOpacity, Image } from 'react-native';
 
+import Login from './src/screens/Login';
+import Register from './src/screens/Register';
 import Home from './src/screens/Home';
 import DetallesEventos from './src/screens/DetallesEventos';
-import Login from './src/screens/Login';
 import Profile from './src/screens/Profile';
 
 const Stack = createNativeStackNavigator();
@@ -31,7 +32,16 @@ const HeaderRight = ({ navigation, profilePicture }) => (
 
 const AuthStack = () => (
 	<Stack.Navigator>
-		<Stack.Screen name="Login" component={Login} options={{ title: 'Login' }} />
+		<Stack.Screen
+			name="Login"
+			component={Login}
+			options={{ title: 'Iniciar sesion' }}
+		/>
+		<Stack.Screen
+			name="Register"
+			component={Register}
+			options={{ title: 'Registrarse' }}
+		/>
 	</Stack.Navigator>
 );
 

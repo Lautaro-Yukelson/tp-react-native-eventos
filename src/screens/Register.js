@@ -13,11 +13,14 @@ import Icon from 'react-native-vector-icons/Ionicons';
 import * as SecureStore from 'expo-secure-store';
 import { useAuth } from '../AuthContext';
 
-const Login = ({ navigation }) => {
-	const [username, setUsername] = useState('pablo.ulman@ort.edu.ar');
-	const [password, setPassword] = useState('pabulm101');
+const Register = ({ navigation }) => {
+	const [isPasswordVisible, setPasswordVisible] = useState(false);
+	const [name, setName] = useState('Pepe');
+	const [surname, setSurname] = useState('Velez');
+	const [username, setUsername] = useState('pepe.velez@ort.edu.ar');
+	const [password, setPassword] = useState('pepe12345$');
 	const [loading, setLoading] = useState(false);
-	const { setIsAuthenticated, login } = useAuth();
+	const { setIsAuthenticated, login, register } = useAuth();
 
 	useEffect(() => {
 		const checkToken = async () => {
@@ -29,17 +32,22 @@ const Login = ({ navigation }) => {
 		checkToken();
 	}, [navigation]);
 
-	const handleLogin = async () => {
+	const handleRegister = async () => {
 		setLoading(true);
 		try {
-			const response = await login(username, password);
+			const response = await register(name, surname, username, password);
 			if (response.success) {
-				setIsAuthenticated(true);
+				const response2 = await login(username, password);
+				if (response2.success) {
+					setIsAuthenticated(true);
+				} else {
+					Alert.alert('Error', response2.message);
+				}
 			} else {
 				Alert.alert('Error', response.message);
 			}
 		} catch (error) {
-			Alert.alert('Error', 'Hubo un problema al intentar iniciar sesión.');
+			Alert.alert('UPS!', error.message);
 		} finally {
 			setLoading(false);
 		}
@@ -50,7 +58,35 @@ const Login = ({ navigation }) => {
 			<View style={styles.form_container}>
 				<View style={styles.logoAndTitleContainer}>
 					<Image style={styles.tinyLogo} source={require('../assets/icon.png')} />
-					<Text style={styles.title}>Iniciar Sesión</Text>
+					<Text style={styles.title}>Register</Text>
+				</View>
+
+				<View style={styles.inputContainer}>
+					<Text style={styles.label}>Nombre</Text>
+					<View style={styles.inputSection}>
+						<Icon name="person-outline" size={24} color="#000" />
+						<TextInput
+							style={styles.input}
+							placeholder="Nombre..."
+							value={name}
+							onChangeText={setName}
+							autoCapitalize="words"
+						/>
+					</View>
+				</View>
+
+				<View style={styles.inputContainer}>
+					<Text style={styles.label}>Apellido</Text>
+					<View style={styles.inputSection}>
+						<Icon name="person-outline" size={24} color="#000" />
+						<TextInput
+							style={styles.input}
+							placeholder="Apellido..."
+							value={surname}
+							onChangeText={setSurname}
+							autoCapitalize="words"
+						/>
+					</View>
 				</View>
 
 				<View style={styles.inputContainer}>
@@ -59,43 +95,50 @@ const Login = ({ navigation }) => {
 						<Icon name="mail-outline" size={24} color="#000" />
 						<TextInput
 							style={styles.input}
-							placeholder="Correo electrónico..."
+							placeholder="Email..."
 							value={username}
 							onChangeText={setUsername}
-							autoCapitalize="none"
 							keyboardType="email-address"
+							autoCapitalize="none"
 						/>
 					</View>
 				</View>
 
 				<View style={styles.inputContainer}>
-					<Text style={styles.label}>Contraseña</Text>
+					<Text style={styles.label}>Password</Text>
 					<View style={styles.inputSection}>
 						<Icon name="lock-closed-outline" size={24} color="#000" />
 						<TextInput
 							style={styles.input}
-							placeholder="Contraseña..."
+							placeholder="Password..."
 							value={password}
 							onChangeText={setPassword}
-							secureTextEntry={true}
+							secureTextEntry={!isPasswordVisible}
 						/>
+						<TouchableOpacity onPress={() => setPasswordVisible(!isPasswordVisible)}>
+							<Icon
+								name={isPasswordVisible ? 'eye-outline' : 'eye-off-outline'}
+								size={24}
+								color="#000"
+							/>
+						</TouchableOpacity>
 					</View>
 				</View>
 
 				<TouchableOpacity
-					style={styles.loginButton}
-					onPress={handleLogin}
+					style={styles.registerButton}
+					onPress={handleRegister}
 					disabled={loading}>
 					{loading ? (
 						<ActivityIndicator color="#fff" />
 					) : (
-						<Text style={styles.loginButtonText}>Iniciar Sesión</Text>
+						<Text style={styles.registerButtonText}>Register</Text>
 					)}
 				</TouchableOpacity>
 
 				<View style={styles.footer}>
-					<TouchableOpacity onPress={() => navigation.navigate('Register')}>
-						<Text style={styles.footerText}>Registrarse</Text>
+					<TouchableOpacity>
+						<Text style={styles.footerText}>Iniciar Sesion</Text>
 					</TouchableOpacity>
 					<TouchableOpacity>
 						<Text style={styles.footerText}>¿Olvidaste tu contraseña?</Text>
@@ -157,14 +200,14 @@ const styles = StyleSheet.create({
 		marginLeft: 10,
 		fontSize: 16,
 	},
-	loginButton: {
+	registerButton: {
 		backgroundColor: '#3E4684',
 		padding: 15,
 		borderRadius: 8,
 		alignItems: 'center',
 		marginTop: 20,
 	},
-	loginButtonText: {
+	registerButtonText: {
 		color: '#fff',
 		fontSize: 18,
 	},
@@ -179,4 +222,4 @@ const styles = StyleSheet.create({
 	},
 });
 
-export default Login;
+export default Register;

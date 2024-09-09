@@ -31,9 +31,9 @@ const useAxios = () => {
 				},
 			});
 			return response.data;
-		} catch (err) {
-			setError(err.response ? err.response.data : 'An error occurred');
-			throw err;
+		} catch (e) {
+			setError(error ? error : 'Error deconocido');
+			throw error;
 		} finally {
 			setLoading(false);
 		}

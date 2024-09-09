@@ -36,8 +36,28 @@ export const AuthProvider = ({ children }) => {
 				setIsAuthenticated(true);
 				return response;
 			}
-		} catch (err) {
-			console.error('Login Error:', err);
+		} catch (error) {
+			console.error('Fetch API Error');
+			console.error(error);
+			return error;
+		}
+	};
+
+	const register = async (first_name, last_name, username, password) => {
+		try {
+			const response = await makeRequest('post', '/user/register', {
+				first_name,
+				last_name,
+				username,
+				password,
+			});
+			if (response.success) {
+				return response;
+			}
+		} catch (error) {
+			console.error('Fetch API Error');
+			console.error(error);
+			return error;
 		}
 	};
 
@@ -49,7 +69,14 @@ export const AuthProvider = ({ children }) => {
 
 	return (
 		<AuthContext.Provider
-			value={{ isAuthenticated, setIsAuthenticated, user, login, logout }}>
+			value={{
+				isAuthenticated,
+				setIsAuthenticated,
+				user,
+				login,
+				register,
+				logout,
+			}}>
 			{children}
 		</AuthContext.Provider>
 	);
