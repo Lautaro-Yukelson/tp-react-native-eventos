@@ -16,6 +16,7 @@ import { useAuth } from '../AuthContext';
 const Login = ({ navigation }) => {
 	const [username, setUsername] = useState('pablo.ulman@ort.edu.ar');
 	const [password, setPassword] = useState('pabulm101');
+	const [isPasswordVisible, setPasswordVisible] = useState(false);
 	const [loading, setLoading] = useState(false);
 	const { setIsAuthenticated, login } = useAuth();
 
@@ -74,11 +75,18 @@ const Login = ({ navigation }) => {
 						<Icon name="lock-closed-outline" size={24} color="#000" />
 						<TextInput
 							style={styles.input}
-							placeholder="Contraseña..."
+							placeholder="Password..."
 							value={password}
 							onChangeText={setPassword}
-							secureTextEntry={true}
+							secureTextEntry={!isPasswordVisible}
 						/>
+						<TouchableOpacity onPress={() => setPasswordVisible(!isPasswordVisible)}>
+							<Icon
+								name={isPasswordVisible ? 'eye-outline' : 'eye-off-outline'}
+								size={24}
+								color="#000"
+							/>
+						</TouchableOpacity>
 					</View>
 				</View>
 

@@ -137,8 +137,8 @@ const Register = ({ navigation }) => {
 				</TouchableOpacity>
 
 				<View style={styles.footer}>
-					<TouchableOpacity>
-						<Text style={styles.footerText}>Iniciar Sesion</Text>
+					<TouchableOpacity onPress={() => navigation.navigate('Login')}>
+						<Text style={styles.footerText}>Iniciar Sesión</Text>
 					</TouchableOpacity>
 					<TouchableOpacity>
 						<Text style={styles.footerText}>¿Olvidaste tu contraseña?</Text>
