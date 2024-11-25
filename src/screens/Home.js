@@ -6,14 +6,16 @@ import {
   Text,
   TouchableOpacity,
   Image,
+  TextInput,
 } from "react-native";
+import { Picker } from "@react-native-picker/picker";
 import useAxios from "../hooks/useAxios";
 import moment from "moment";
 import "moment/locale/es";
 
 const EventoItem = React.memo(({ evento, onPress }) => {
   const formattedDate = moment(evento.start_date).format(
-    "D [de] MMMM [de] YYYY"
+    "D [de] MMMM [de] YYYY",
   );
 
   return (
@@ -35,6 +37,9 @@ const EventoItem = React.memo(({ evento, onPress }) => {
 
 const Home = ({ navigation }) => {
   const [eventos, setEventos] = useState([]);
+  const [filteredEventos, setFilteredEventos] = useState([]);
+  const [search, setSearch] = useState("");
+  const [category, setCategory] = useState("");
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(false);
   const { makeRequest } = useAxios();
@@ -62,12 +67,25 @@ const Home = ({ navigation }) => {
         setLoading(false);
       }
     },
-    [loading, makeRequest]
+    [loading, makeRequest],
   );
 
   useEffect(() => {
     fetchData(page);
   }, [fetchData, page]);
+
+  useEffect(() => {
+    console.log("Aplicando filtros. Categoría actual:", category, "Búsqueda:", search);
+  
+    const filtered = eventos.filter((evento) => {
+      const matchesSearch = evento.name.toLowerCase().includes(search.toLowerCase());
+      const matchesCategory = category === "all" || evento.category_name === category;
+      return matchesSearch && matchesCategory;
+    });
+  
+    setFilteredEventos(filtered);
+  }, [search, category]);
+  
 
   const loadMore = useCallback(() => {
     if (!loading) {
@@ -82,15 +100,40 @@ const Home = ({ navigation }) => {
         onPress={() => navigation.navigate("DetallesEvento", { evento: item })}
       />
     ),
-    [navigation]
+    [navigation],
   );
 
   const keyExtractor = useCallback((item) => item.id.toString(), []);
 
+  useEffect(() => {
+    setCategory("all")
+  }, [])
+  
+
   return (
     <View style={styles.container}>
+      <TextInput
+        style={styles.searchInput}
+        placeholder="Buscar evento por nombre"
+        value={search}
+        onChangeText={setSearch}
+      />
+      <Picker
+        selectedValue={category}
+        onValueChange={(itemValue) => {
+          console.log("Seleccionada la categoría:", itemValue);        
+            setCategory(itemValue);
+        }}
+        style={styles.picker}
+      >
+        <Picker.Item label="Todas las categorías" value="all" />
+        {[...new Set(eventos.map((e) => e.category_name))].map((cat) => (
+          <Picker.Item key={cat} label={cat} value={cat} />
+        ))}
+      </Picker>
+
       <FlatList
-        data={eventos}
+        data={filteredEventos}
         renderItem={renderEventoItem}
         keyExtractor={keyExtractor}
         contentContainerStyle={styles.flatListContent}
@@ -112,6 +155,18 @@ const styles = StyleSheet.create({
   },
   flatListContent: {
     width: "100%",
+  },
+  searchInput: {
+    height: 40,
+    borderColor: "#ced4da",
+    borderWidth: 1,
+    borderRadius: 5,
+    paddingHorizontal: 10,
+    marginBottom: 10,
+  },
+  picker: {
+    height: 40,
+    marginBottom: 10,
   },
   itemContainer: {
     flexDirection: "row",
