@@ -3,7 +3,7 @@ import axios from 'axios';
 import * as SecureStore from 'expo-secure-store';
 
 const apiBaseUrl = 'yuke.ddns.net';
-const apiPort = '3103';
+const apiPort = '4000';
 
 const axiosInstance = axios.create({
 	baseURL: `http://${apiBaseUrl}:${apiPort}/api/dai`,
@@ -33,7 +33,7 @@ const useAxios = () => {
 			return response.data;
 		} catch (e) {
 			setError(error ? error : 'Error deconocido');
-			throw error;
+			throw e;
 		} finally {
 			setLoading(false);
 		}

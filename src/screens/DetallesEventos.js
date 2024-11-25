@@ -1,21 +1,84 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import {
 	View,
 	Text,
 	StyleSheet,
 	Image,
 	ScrollView,
-	Platform,
 	TouchableOpacity,
+	Alert,
 } from 'react-native';
 import moment from 'moment';
 import 'moment/locale/es';
+import { useAuth } from '../AuthContext.js';
+import useAxios from '../hooks/useAxios.js';
 
 const DetallesEvento = ({ route }) => {
+	const { user } = useAuth();
+	const { makeRequest } = useAxios();
+	const [sub, setSub] = useState(false);
+	const [participants, setParticipants] = useState([]);
 	const { evento } = route.params;
+
 	const formattedDate = moment(evento.start_date).format(
 		'D [de] MMMM [de] YYYY',
 	);
+
+	const isPastEvent = moment(evento.start_date).isBefore(moment());
+
+	const fetchData = async () => {
+		try {
+			const response = await makeRequest('get', `/event/${evento.id}/enrollment`);
+			const data = response.response;
+			if (isPastEvent) {
+				setParticipants(data);
+			} else {
+				data.forEach((enrollment) => {
+					if (enrollment.username == user.username) {
+						setSub(true);
+					}
+				});
+			}
+		} catch (error) {
+			console.log(error);
+		}
+	};
+
+	const handleSub = async () => {
+		try {
+			const response = await makeRequest(
+				'post',
+				`/event/${evento.id}/enrollment`,
+				{},
+			);
+			if (response.success) {
+				Alert.alert('Te suscribiste con éxito');
+				setSub(true);
+			}
+		} catch (error) {
+			console.log(error);
+		}
+	};
+
+	const handleUnSub = async () => {
+		try {
+			const response = await makeRequest(
+				'delete',
+				`/event/${evento.id}/enrollment`,
+				{},
+			);
+			if (response.success) {
+				Alert.alert('Te desuscribiste con éxito');
+				setSub(false);
+			}
+		} catch (error) {
+			console.log(error);
+		}
+	};
+
+	useEffect(() => {
+		fetchData();
+	}, []);
 
 	return (
 		<ScrollView contentContainerStyle={styles.container}>
@@ -33,12 +96,29 @@ const DetallesEvento = ({ route }) => {
 					<Text style={styles.start_date}>{formattedDate}</Text>
 				</View>
 			</View>
-			<TouchableOpacity
-				style={styles.subButton}
-				//onPress={handleLogin}
-			>
-				<Text style={styles.subButtonText}>Suscribirse</Text>
-			</TouchableOpacity>
+			{isPastEvent ? (
+				<View style={styles.participantsContainer}>
+					<Text style={styles.participantsTitle}>Participantes:</Text>
+					{participants.map((participant, index) => (
+						<View key={index} style={styles.participantRow}>
+							<Text style={styles.participantText}>
+								{participant.first_name} {participant.last_name}
+							</Text>
+							<Text style={styles.participantStatus}>
+								{participant.attended == 1 ? '✔️' : '❌'}
+							</Text>
+						</View>
+					))}
+				</View>
+			) : sub ? (
+				<TouchableOpacity style={styles.unSubButton} onPress={handleUnSub}>
+					<Text style={styles.subButtonText}>Desuscribirse</Text>
+				</TouchableOpacity>
+			) : (
+				<TouchableOpacity style={styles.subButton} onPress={handleSub}>
+					<Text style={styles.subButtonText}>Suscribirse</Text>
+				</TouchableOpacity>
+			)}
 		</ScrollView>
 	);
 };
@@ -108,10 +188,40 @@ const styles = StyleSheet.create({
 		alignItems: 'center',
 		marginTop: 20,
 	},
-
+	unSubButton: {
+		color: '#fff',
+		backgroundColor: 'red',
+		padding: 15,
+		borderRadius: 8,
+		alignItems: 'center',
+		marginTop: 20,
+	},
 	subButtonText: {
 		color: '#fff',
 		fontSize: 18,
+	},
+	participantsContainer: {
+		marginTop: 20,
+	},
+	participantsTitle: {
+		fontSize: 18,
+		fontWeight: 'bold',
+		color: '#343a40',
+		marginBottom: 10,
+	},
+	participantRow: {
+		flexDirection: 'row',
+		justifyContent: 'space-between',
+		alignItems: 'center',
+		marginBottom: 5,
+	},
+	participantText: {
+		fontSize: 16,
+		color: '#495057',
+	},
+	participantStatus: {
+		fontSize: 18,
+		marginRight: 10,
 	},
 });
 
